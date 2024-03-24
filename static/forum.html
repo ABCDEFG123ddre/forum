@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>forum</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+	<style>
+		body {font-family: Arial, Helvetica, sans-serif;}
+		* {box-sizing: border-box;}
+		
+		.themetitle {
+		  margin: 15px;
+		  padding: 4px 12px;
+		  background-color: #e7f3fe;
+		  border-left: 10px solid #2196F3;
+		}
+		.add-button{
+		  background-color: #04AA6D;
+		  color: white;
+		  padding: 12px 20px;
+		  border: none;
+		  border-radius: 4px;
+		  cursor: pointer;
+		}
+		.add-button:hover{
+		  background-color: #45a049;
+		}
+		
+		.form input[type=text], textarea {
+		  width: 100%;
+		  padding: 12px;
+		  border: 1px solid #ccc;
+		  border-radius: 4px;
+		  box-sizing: border-box;
+		  margin-top: 6px;
+		  margin-bottom: 16px;
+		  resize: vertical;
+		}
+		.form input[type=button] {
+		  background-color: #04AA6D;
+		  color: white;
+		  padding: 12px 20px;
+		  border: none;
+		  border-radius: 4px;
+		  cursor: pointer;
+		}
+
+		.form input[type=button]:hover {
+		  background-color: #45a049;
+		}
+		
+		#add-Theme {
+		  width: 510px;
+		  border: 3px solid #f1f1f1;
+		  z-index: 9;
+		}
+		.addform {
+		  max-width: 500px;
+		  padding: 10px;
+		  background-color: white;
+		}
+		.go{
+			color: blue;
+			border: none;
+			background-color: inherit;
+			font-size: 25px;
+			padding: 15px;
+			width: 200px;
+			transition: all 0.5s;
+			cursor: pointer;
+			margin: 5px;
+		}
+		.go span {
+		  cursor: pointer;
+		  display: inline-block;
+		  position: relative;
+		  transition: 0.5s;
+		}
+
+		.go span:after {
+		  content: '\00bb';
+		  position: absolute;
+		  opacity: 1;
+		  top: 0;
+		  right: -15px;
+		  transition: 0.5s;
+		}
+		.go:hover span {
+		  padding-right: 0px;
+		}
+		
+		.go:hover span:after {
+		  opacity: 1;
+		  right: -30px;
+		}
+		.search-container {
+		  float: right;
+		}
+		.top .search-container button {
+		  float: right;
+		  padding: 6px 10px;
+		  margin-top: 8px;
+		  margin-right: 16px;
+		  background: #ddd;
+		  font-size: 17px;
+		  border: none;
+		  cursor: pointer;
+		}
+		.search-container button:hover {
+		  background: #ccc;
+		}
+		.top input[type=text] {
+		  padding: 6px;
+		  margin-top: 8px;
+		  font-size: 17px;
+		  border: 1px solid #ccc;
+		}
+		.footer{
+			margin: 15px;
+		    padding: 20px 10px;
+			background-color: #e7f3fe;
+			text-align:center;
+			color:black;
+		    border-bottom: 15px solid #2196F3;
+		}
+	</style>
+</head>
+<body onload="retrieveAll()">
+	<div class='top'>
+		<h1 style="border-bottom-style:solid; color:blue; text-align: center;">討論區</h1>
+		<input  class="add-button" type="button" onclick="addNewTheme()" value="新增一個討論主題"/>
+		<input  class="add-button" type="button" onclick="sort()" value="按照回復數排序"/>
+		<input  class="add-button" type="button" onclick="sortbytime()" value="按照發布時間排序"/>
+		<div class='search-container' >
+			<form action="/homepage/search/">
+				<input type="text" placeholder="Search..." name="search" >
+				<button type="submit"><i class="fa fa-search"></i></button>
+			</form>
+		</div>
+	</div>
+	<div id="homepage" style="display:none;" >
+	</div>
+	<div id="add-Theme" style="display:none;" class='form' >
+		<table action="/insert" class="addform">
+		<h2>新增主題</h2>
+		<label for="themeName">主題名稱</label>
+		<input type="text" id="themeName" name="themeName" placeholder="主題名稱...">
+		<label for="subject">內容</label>
+		<textarea id="content" name="content" placeholder="寫點東西吧..." style="height:200px"></textarea>
+		<input type="button" value="確定新增" onclick="insertNewTheme()">
+		<input style='float:right' type="button" value="取消" onclick="cancel()">
+		</table>
+	</div>
+	<div class='footer' >
+		已經到底囉！
+	</div>
+	<script>
+		function retrieveAll(){
+			$.ajax({
+				contentType:"application/json",
+				url: "/homepage/",
+				type:"GET",
+				success: function(alldata){
+					var alltheme='';
+					for(var i=0;i<alldata.length;i++){
+						alltheme=alltheme+"<div class='themetitle' ><p id="+i+">";
+						alltheme=alltheme+"<button type='button' class='go' onclick='gototheme("+alldata[i][0]+")'><span>"+alldata[i][1]+"</span></button>";
+						alltheme=alltheme+"<h4>回覆次數："+alldata[i][4]+"</h4>";
+						alltheme=alltheme+"<h5 style='text-align:right;'>發布時間："+alldata[i][3]+"</h5>";
+						alltheme=alltheme+"</p></div>";
+					}
+					document.getElementById("homepage").innerHTML=alltheme;
+						if(alldata.length!=0){
+							document.getElementById("homepage").style.display="block";
+						}
+				},
+				error: function(){
+					alert('載入失敗，請重新整理後再來');
+				}
+			});
+		}
+		
+		function addNewTheme(){
+			document.getElementById("homepage").style.display="none";
+			document.getElementById("add-Theme").style.display="block";
+						
+		}
+		function insertNewTheme(){
+			var getthemeName=document.querySelector("#themeName").value;
+			var getcontent=document.getElementById("content").value;
+			var theme=new Object();
+			theme.themeName=getthemeName;
+			theme.content=getcontent;
+			var jsonobj=JSON.stringify(theme);
+			$.ajax({
+				contentType: "application/json", 
+				data:jsonobj,
+				type: 'POST',
+				url: "/insert/",
+				success: function(data){
+					document.getElementById("add-Theme").style.display="none";
+					document.getElementById("homepage").style.display="block";
+					document.getElementById("themeName").value="";
+					document.getElementById("content").value="";
+					retrieveAll();
+				},
+				error: function(data) {
+					console.log(data);
+					alert("傳送資料失敗");
+				}
+			});
+		}
+		function cancel(){
+			location.reload();
+			document.getElementById("themeName").value="";
+			document.getElementById("content").value="";
+		}
+		function search(){
+			$.ajax({
+				contentType:"application/json",
+				url: "/homepage/search/",
+				type:"GET",
+				success: function(alldata){
+					console.log(alldata)
+				},
+				error: function(){
+					alert('載入失敗，請重新整理後再來');
+				}
+			});
+		}
+		
+		function gototheme(id){
+			location.replace("/?themeid="+id)
+			$.ajax({
+				contentType:"application/json",
+				url: "/?themeid="+id,
+				type:"GET",
+				success: function(a){
+					console.log(a);
+				},
+				error: function(){
+					alert('載入失敗，請重新整理後再來');
+				}
+			});
+			
+		} 
+		function sort(){
+		$.ajax({
+		   contentType:"application/json",
+		   url: "/sort/",
+		   type:"GET",
+		   success: function(data){
+			var result="";
+			console.log(data);
+			var l=data.length;
+			var alltheme='';
+			for(var i=0;i<l;i++){
+				alltheme=alltheme+"<div class='themetitle' ><p id="+i+">";
+				alltheme=alltheme+"<button type='button' class='go' onclick='gototheme("+data[i][0]+")'><span>"+data[i][1]+"</span></button>";
+				alltheme=alltheme+"<h4>回覆次數："+data[i][4]+"</h4>";
+				alltheme=alltheme+"<h5 style='text-align:right;'>發布時間："+data[i][3]+"</h5>";
+				alltheme=alltheme+"</p></div>";
+			}
+			document.getElementById("homepage").innerHTML=alltheme;
+		   },
+		   error: function(){
+			alert('載入使用者失敗，請重新整理後再來');
+		}
+		});
+	  }
+	  function sortbytime(){
+		$.ajax({
+				contentType:"application/json",
+				url: "/sortbytime/",
+				type:"GET",
+				success: function(alldata){
+					var alltheme=''; 
+					for(var i=0;i<alldata.length;i++){
+						alltheme=alltheme+"<div class='themetitle' ><p id="+i+">";
+						alltheme=alltheme+"<button type='button' class='go' onclick='gototheme("+alldata[i][0]+")'><span>"+alldata[i][1]+"</span></button>";
+						alltheme=alltheme+"<h4>回覆次數："+alldata[i][4]+"</h4>";
+						alltheme=alltheme+"<h5 style='text-align:right;'>發布時間："+alldata[i][3]+"</h5>";
+						alltheme=alltheme+"</p></div>";
+					}
+					document.getElementById("homepage").innerHTML=alltheme;
+						if(alldata.length!=0){
+							document.getElementById("homepage").style.display="block";
+						}
+				},
+				error: function(){
+					alert('載入失敗，請重新整理後再來');
+				}
+			});
+	  }
+	</script>
+</body>
+</html>
