@@ -1,2 +1,3 @@
-# forum
-A simplified version of forum
+# Forum
+A simplified version of anonymous forum
+Computer Programming Project
