@@ -1,8 +1,6 @@
 # Forum
 A simplified version of anonymous forum
 
-Project: Computer Programming Course
-
 ### Requirement
 - fastAPI
 - pydantic
