@@ -14,5 +14,3 @@ A simplified version of anonymous forum
 - Run: pip3 install uvicorn[standard]
 - Run: uvicorn forum:app--reload
 - Open browser, enter: http://127.0.0.1:8000/static/forum.html
-  
-  (Since this website was only been tested on localhost)
